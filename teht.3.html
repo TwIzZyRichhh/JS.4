@@ -2,9 +2,130 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Series Search App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #results {
+      margin-top: 20px;
+    }
+
+    article {
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    img {
+      max-width: 200px;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
-$END$
+  <h1>Search for a TV Series</h1>
+  <form id="searchForm">
+    <input id="query" name="q" type="text" placeholder="Enter TV Series Name" required>
+    <button type="submit">Search</button>
+  </form>
+  <div id="results"></div>
+
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const query = document.getElementById('query').value.trim();
+
+      if (!query) {
+        console.error('Error: Search query cannot be empty.');
+        return;
+      }
+      const apiUrl = `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`;
+
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Search Results:', data);
+
+          const resultsDiv = document.getElementById('results');
+          resultsDiv.innerHTML = '';
+
+          if (data.length === 0) {
+            resultsDiv.innerHTML = '<p>No results found.</p>';
+            return;
+          }
+
+          data.forEach(item => {
+            const show = item.show;
+
+            const articleElement = document.createElement('article');
+
+            const showNameElement = document.createElement('h2');
+            showNameElement.textContent = show.name;
+            articleElement.appendChild(showNameElement);
+
+            const showUrlElement = document.createElement('a');
+            showUrlElement.href = show.url;
+            showUrlElement.target = "_blank";
+            showUrlElement.textContent = 'More Info';
+            articleElement.appendChild(showUrlElement);
+
+            const imgElement = document.createElement('img');
+            imgElement.src = show.image?.medium || '';
+            imgElement.alt = show.name;
+            if (show.image?.medium) {
+              articleElement.appendChild(imgElement);
+            }
+
+            const summaryElement = document.createElement('div');
+            summaryElement.innerHTML = show.summary || 'No summary available.';
+            articleElement.appendChild(summaryElement);
+            resultsDiv.appendChild(articleElement);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          const resultsDiv = document.getElementById('results');
+          resultsDiv.innerHTML = '<p>An error occurred while fetching data. Please try again later.</p>';
+        });
+    });
+  </script>
 </body>
 </html>

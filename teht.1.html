@@ -2,9 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Series Search</title>
 </head>
 <body>
-$END$
+  <h1>Search for a TV Series</h1>
+  <form id="searchForm">
+    <input id="query" name="q" type="text" placeholder="Enter TV Series Name" required>
+    <button type="submit">Search</button>
+  </form>
+  <div id="results"></div>
+
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', function (event) {
+  event.preventDefault();
+
+  const query = document.getElementById('query').value;
+  const apiUrl = `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`;
+
+  fetch(apiUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log(data);
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = ''; // Clear previous results
+
+      data.forEach(item => {
+        const show = item.show;
+        const showElement = document.createElement('div');
+        showElement.innerHTML = `
+          <h2>${show.name}</h2>
+          <p>${show.summary || 'No summary available.'}</p>
+          <a href="${show.url}" target="_blank">More Info</a>
+          <hr>
+        `;
+        resultsDiv.appendChild(showElement);
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+});
+
+  </script>
 </body>
 </html>
